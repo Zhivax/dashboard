@@ -101,6 +101,35 @@ def ensure_db_and_table():
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             ''')
             
+            # Reports table (for reporting_service)
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS reports (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_email VARCHAR(255) NOT NULL,
+                    report_type VARCHAR(100) NOT NULL,
+                    report_data JSON NOT NULL,
+                    generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_user_email (user_email),
+                    INDEX idx_report_type (report_type)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ''')
+
+            # API logs table (for api_gateway)
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS api_logs (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    endpoint VARCHAR(255) NOT NULL,
+                    method VARCHAR(10) NOT NULL,
+                    status_code INT NOT NULL,
+                    user_email VARCHAR(255),
+                    request_body TEXT,
+                    response_body TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_endpoint (endpoint),
+                    INDEX idx_user_email (user_email)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ''')
+            
         conn.commit()
         print('Database and tables are ready.')
     finally:
