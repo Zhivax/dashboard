@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MSME Inventory</title>
+    <link rel="stylesheet" href="style/dashboard.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">MSME Inventory</div>
+            <div style="flex:1"></div>
+            <div class="navbar-buttons">
+                <a href="../index.html" class="btn btn-outline">Home</a>
+                <a href="../auth/login.html" class="btn">Logout</a>
+            </div>
+        </div>
+    </nav>
+    <main class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <ul>
+                <li><a href="#inventory">Inventory</a></li>
+                <li><a href="#orders">Orders</a></li>
+                <li><a href="#notifications">Notifications</a></li>
+                <li><a href="#reporting">Reporting</a></li>
+                <li><a href="#profile">Profile</a></li>
+            </ul>
+        </aside>
+        <section class="dashboard-content">
+            <h1>Dashboard UMKM</h1>
+            <div class="dashboard-welcome">
+                <p>Selamat datang di dashboard manajemen inventaris UMKM Anda!</p>
+                <p>Pilih menu di samping untuk mengelola inventaris, pesanan, notifikasi, laporan, dan profil Anda.</p>
+            </div>
+            <div class="dashboard-widgets">
+                <div class="widget" id="inventory">
+                    <h2>Inventory</h2>
+                    <p>Kelola stok barang, tambah, edit, dan hapus produk.</p>
+                </div>
+                <div class="widget" id="orders">
+                    <h2>Orders</h2>
+                    <p>Lihat dan kelola pesanan masuk, proses pengiriman, dan status order.</p>
+                </div>
+                <div class="widget" id="notifications">
+                    <h2>Notifications</h2>
+                    <p>Notifikasi penting terkait stok, pesanan, dan sistem.</p>
+                </div>
+                <div class="widget" id="reporting">
+                    <h2>Reporting</h2>
+                    <p>Laporan penjualan, stok, dan performa bisnis.</p>
+                </div>
+                <div class="widget" id="profile">
+                    <h2>Profile</h2>
+                    <p>Kelola data akun dan pengaturan profil Anda.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="footer">
+        &copy; 2025 MSME Inventory. All rights reserved.
+    </footer>
+</body>
+</html>

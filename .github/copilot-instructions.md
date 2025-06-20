@@ -1,0 +1,3 @@
+<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
+
+This workspace is a full-stack Inventory Management API Dashboard for creative MSMEs, with a Flask microservices backend (Auth, Inventory, Order, Notification, Reporting, API Gateway) and a React (Vite) frontend. Use best practices for microservices, JWT, Google OAuth, AWS DynamoDB, Docker, HTTPS, rate limiting, circuit breaker, and frontend state management. All code should be production-ready and secure.

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MSME Inventory</title>
+    <link rel="stylesheet" href="style/login.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">MSME Inventory</div>
+            <div style="flex:1"></div>
+            <div class="navbar-buttons">
+                <a href="../index.html" class="btn btn-outline">Home</a>
+                <a href="register.html" class="btn">Register</a>
+            </div>
+        </div>
+    </nav>
+    <main class="login-container">
+        <form class="login-form">
+            <h2>Login Akun</h2>
+            <div id="login-error" style="color:#e53e3e; margin-bottom:0.7rem; display:none;"></div>
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit" class="btn">Login</button>
+        </form>
+    </main>
+    <footer class="footer">
+        &copy; 2025 MSME Inventory. All rights reserved.
+    </footer>
+    <script>
+        document.querySelector('.login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            try {
+                // Pertama, ambil email dari username
+                const resUser = await fetch('http://localhost:5000/get_email_by_username', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const userData = await resUser.json();
+                if (!resUser.ok) {
+                    errorDiv.textContent = userData.error || 'Username tidak ditemukan';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                const email = userData.email;
+                // Lakukan login dengan email dan password
+                const res = await fetch('http://localhost:5000/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    // Simpan token jika perlu: localStorage.setItem('token', data.token);
+                    window.location.href = '../dashboard/dashboard.html';
+                } else {
+                    errorDiv.textContent = data.error || 'Login gagal';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Tidak dapat terhubung ke server.';
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
