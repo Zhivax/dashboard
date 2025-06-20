@@ -42,8 +42,9 @@
             const errorDiv = document.getElementById('login-error');
             errorDiv.style.display = 'none';
             errorDiv.textContent = '';
+            
             try {
-                // Pertama, ambil email dari username
+                // First get email from username
                 const resUser = await fetch('http://localhost:5000/get_email_by_username', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -56,7 +57,8 @@
                     return;
                 }
                 const email = userData.email;
-                // Lakukan login dengan email dan password
+                
+                // Login with email and password
                 const res = await fetch('http://localhost:5000/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -64,7 +66,8 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    // Simpan token jika perlu: localStorage.setItem('token', data.token);
+                    // Store token in localStorage - this is the key fix
+                    localStorage.setItem('token', data.token);
                     window.location.href = '../dashboard/dashboard.html';
                 } else {
                     errorDiv.textContent = data.error || 'Login gagal';

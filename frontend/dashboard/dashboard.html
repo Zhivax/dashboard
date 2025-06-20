@@ -6,6 +6,112 @@
     <title>Dashboard - MSME Inventory</title>
     <link rel="stylesheet" href="style/dashboard.css">
     <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Enhanced styles for better integration */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #3182ce;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .stat-card:nth-child(2) {
+            border-left-color: #38a169;
+        }
+
+        .stat-card:nth-child(3) {
+            border-left-color: #ed8936;
+        }
+
+        .stat-card:nth-child(4) {
+            border-left-color: #e53e3e;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #feb2b2;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-dashboard {
+            padding: 0.75rem 1.5rem;
+            background: #3182ce;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-dashboard:hover {
+            background: #2c5aa0;
+            transform: translateY(-1px);
+        }
+
+        .btn-dashboard.secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-dashboard.secondary:hover {
+            background: #cbd5e0;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -13,47 +119,94 @@
             <div class="navbar-brand">MSME Inventory</div>
             <div style="flex:1"></div>
             <div class="navbar-buttons">
+                <span id="userGreeting" style="margin-right: 1rem; color: #4a5568;"></span>
                 <a href="../index.html" class="btn btn-outline">Home</a>
-                <a href="../auth/login.html" class="btn">Logout</a>
+                <button id="logoutBtn" class="btn">Logout</button>
             </div>
         </div>
     </nav>
     <main class="dashboard-container">
         <aside class="dashboard-sidebar">
             <ul>
-                <li><a href="#inventory">Inventory</a></li>
-                <li><a href="#orders">Orders</a></li>
-                <li><a href="#notifications">Notifications</a></li>
-                <li><a href="#reporting">Reporting</a></li>
+                <li><a href="#dashboard" class="active">Dashboard</a></li>
+                <li><a href="#inventory" onclick="navigateToInventory()">Inventory</a></li>
+                <li><a href="#orders" onclick="navigateToOrders()">Orders</a></li>
+                <li><a href="#notifications" onclick="navigateToNotifications()">Notifications</a></li>
+                <li><a href="#reporting" onclick="navigateToReporting()">Reporting</a></li>
                 <li><a href="#profile">Profile</a></li>
             </ul>
         </aside>
         <section class="dashboard-content">
             <h1>Dashboard UMKM</h1>
+            
+            <!-- Error Message Container -->
+            <div id="errorContainer" style="display: none;"></div>
+            
+            <!-- Dashboard Stats -->
+            <div class="dashboard-stats" id="dashboardStats">
+                <div class="stat-card">
+                    <h3>Total Items</h3>
+                    <div class="value" id="totalItems">-</div>
+                    <div class="label">Inventory Items</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Orders</h3>
+                    <div class="value" id="totalOrders">-</div>
+                    <div class="label">Customer Orders</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Revenue</h3>
+                    <div class="value" id="totalRevenue">-</div>
+                    <div class="label">Total Earned</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Low Stock</h3>
+                    <div class="value" id="lowStockItems">-</div>
+                    <div class="label">Items Need Attention</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="dashboard-actions">
+                <a href="../inventory/inventory.html" class="btn-dashboard">
+                    📦 Manage Inventory
+                </a>
+                <a href="../orders/orders.html" class="btn-dashboard">
+                    🛒 View Orders
+                </a>
+                <a href="../reporting/reporting.html" class="btn-dashboard">
+                    📊 View Reports
+                </a>
+                <button class="btn-dashboard secondary" onclick="refreshDashboard()">
+                    🔄 Refresh Data
+                </button>
+            </div>
+            
             <div class="dashboard-welcome">
                 <p>Selamat datang di dashboard manajemen inventaris UMKM Anda!</p>
-                <p>Pilih menu di samping untuk mengelola inventaris, pesanan, notifikasi, laporan, dan profil Anda.</p>
+                <p>Dashboard ini menampilkan ringkasan bisnis Anda secara real-time. Gunakan menu di samping untuk mengakses fitur lengkap.</p>
             </div>
+            
             <div class="dashboard-widgets">
-                <div class="widget" id="inventory">
-                    <h2>Inventory</h2>
-                    <p>Kelola stok barang, tambah, edit, dan hapus produk.</p>
+                <div class="widget" id="inventory" onclick="navigateToInventory()" style="cursor: pointer;">
+                    <h2>📦 Inventory</h2>
+                    <p>Kelola stok barang, tambah, edit, dan hapus produk. Monitor tingkat persediaan secara real-time.</p>
                 </div>
-                <div class="widget" id="orders">
-                    <h2>Orders</h2>
-                    <p>Lihat dan kelola pesanan masuk, proses pengiriman, dan status order.</p>
+                <div class="widget" id="orders" onclick="navigateToOrders()" style="cursor: pointer;">
+                    <h2>🛒 Orders</h2>
+                    <p>Lihat dan kelola pesanan masuk, proses pengiriman, dan status order dari pelanggan.</p>
                 </div>
-                <div class="widget" id="notifications">
-                    <h2>Notifications</h2>
-                    <p>Notifikasi penting terkait stok, pesanan, dan sistem.</p>
+                <div class="widget" id="notifications" onclick="navigateToNotifications()" style="cursor: pointer;">
+                    <h2>🔔 Notifications</h2>
+                    <p>Notifikasi penting terkait stok rendah, pesanan baru, dan update sistem lainnya.</p>
                 </div>
-                <div class="widget" id="reporting">
-                    <h2>Reporting</h2>
-                    <p>Laporan penjualan, stok, dan performa bisnis.</p>
+                <div class="widget" id="reporting" onclick="navigateToReporting()" style="cursor: pointer;">
+                    <h2>📈 Reporting</h2>
+                    <p>Laporan penjualan, analisis stok, dan insight performa bisnis untuk pengambilan keputusan.</p>
                 </div>
-                <div class="widget" id="profile">
-                    <h2>Profile</h2>
-                    <p>Kelola data akun dan pengaturan profil Anda.</p>
+                <div class="widget" id="profile" style="cursor: pointer;">
+                    <h2>👤 Profile</h2>
+                    <p>Kelola data akun dan pengaturan profil bisnis UMKM Anda.</p>
                 </div>
             </div>
         </section>
@@ -61,5 +214,224 @@
     <footer class="footer">
         &copy; 2025 MSME Inventory. All rights reserved.
     </footer>
+
+    <script>
+        // Global variables
+        const baseURL = 'http://localhost:5004'; // Reporting service
+        const authToken = localStorage.getItem('token');
+        let currentUser = null;
+
+        // Check authentication
+        if (!authToken) {
+            window.location.href = '../auth/login.html';
+        }
+
+        // Helper functions
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(amount || 0);
+        }
+
+        function showError(message) {
+            const container = document.getElementById('errorContainer');
+            container.innerHTML = `<div class="error-message">${message}</div>`;
+            container.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                container.style.display = 'none';
+            }, 5000);
+        }
+
+        function setLoading(isLoading) {
+            const statsContainer = document.getElementById('dashboardStats');
+            if (isLoading) {
+                statsContainer.classList.add('loading');
+            } else {
+                statsContainer.classList.remove('loading');
+            }
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '../auth/login.html';
+                    return null;
+                }
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Request failed:', error);
+                return null;
+            }
+        }
+
+        // Load dashboard data from reporting service
+        async function loadDashboardData() {
+            try {
+                setLoading(true);
+                document.getElementById('errorContainer').style.display = 'none';
+                
+                const data = await makeRequest(`${baseURL}/reports/dashboard`);
+                
+                if (data && data.dashboard) {
+                    const { inventory, orders } = data.dashboard;
+                    
+                    // Update inventory metrics
+                    document.getElementById('totalItems').textContent = inventory.total_items || 0;
+                    document.getElementById('lowStockItems').textContent = inventory.low_stock_items || 0;
+                    
+                    // Update order metrics
+                    document.getElementById('totalOrders').textContent = orders.total_orders || 0;
+                    
+                    // Update revenue metrics
+                    const totalRevenue = orders.total_revenue || 0;
+                    document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+                    
+                    console.log('Dashboard data loaded successfully');
+                } else {
+                    throw new Error('Invalid data format received from reporting service');
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showError('Gagal memuat data dashboard. Silakan coba refresh atau periksa koneksi internet Anda.');
+                
+                // Set default values on error
+                document.getElementById('totalItems').textContent = '0';
+                document.getElementById('totalOrders').textContent = '0';
+                document.getElementById('totalRevenue').textContent = formatCurrency(0);
+                document.getElementById('lowStockItems').textContent = '0';
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Get current user info
+        async function getCurrentUser() {
+            try {
+                const response = await fetch('http://localhost:5000/protected', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.user;
+                    
+                    // Update user greeting
+                    const userGreeting = document.getElementById('userGreeting');
+                    if (currentUser && currentUser.username) {
+                        userGreeting.textContent = `Halo, ${currentUser.username}`;
+                    }
+                }
+            } catch (error) {
+                console.error('Error getting current user:', error);
+            }
+        }
+
+        // Navigation functions
+        function navigateToInventory() {
+            window.location.href = '../inventory/inventory.html';
+        }
+
+        function navigateToNotifications() {
+            window.location.href = '../notifications/notifications.html';
+        }
+
+        function navigateToOrders() {
+            window.location.href = '../orders/orders.html';
+        }
+
+        function navigateToReporting() {
+            window.location.href = '../reporting/reporting.html';
+        }
+
+        function refreshDashboard() {
+            loadDashboardData();
+        }
+
+        async function logout() {
+            try {
+                await fetch('http://localhost:5000/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                localStorage.removeItem('token');
+                window.location.href = '../auth/login.html';
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Load initial data
+            getCurrentUser();
+            loadDashboardData();
+            
+            // Auto-refresh every 5 minutes
+            setInterval(loadDashboardData, 300000);
+            
+            // Add hover effects to widgets
+            const widgets = document.querySelectorAll('.widget');
+            widgets.forEach(widget => {
+                widget.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                });
+                
+                widget.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                });
+            });
+            
+            // Add sidebar navigation active state
+            const currentPage = window.location.pathname;
+            const sidebarLinks = document.querySelectorAll('.dashboard-sidebar a');
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Set dashboard as active since we're on dashboard
+            const dashboardLink = document.querySelector('a[href="#dashboard"]');
+            if (dashboardLink) {
+                dashboardLink.classList.add('active');
+            }
+        });
+
+        // Make functions global for onclick handlers
+        window.navigateToInventory = navigateToInventory;
+        window.navigateToNotifications = navigateToNotifications;
+        window.navigateToOrders = navigateToOrders;
+        window.navigateToReporting = navigateToReporting;
+        window.refreshDashboard = refreshDashboard;
+    </script>
 </body>
 </html>

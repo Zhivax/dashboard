@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - MSME</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .inventory-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f8f9fa;
+            min-height: 80vh;
+        }
+
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .inventory-header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin: 0;
+        }
+
+        .inventory-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .filter-section select,
+        .filter-section input {
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .filter-section input {
+            width: 200px;
+        }
+
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 4px solid #3182ce;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card span {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        /* Table Styles */
+        .inventory-table-container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .inventory-table th,
+        .inventory-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .inventory-table th {
+            background: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .inventory-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .type-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .type-raw_material {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .type-finished_product {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        .quantity-low {
+            color: #e53e3e;
+            font-weight: bold;
+        }
+
+        .quantity-normal {
+            color: #38a169;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-edit {
+            background: #3182ce;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2c5aa0;
+        }
+
+        .btn-delete {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c53030;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #2d3748;
+        }
+
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #718096;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .close:hover {
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49,130,206,0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Loading and Empty States */
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3182ce;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #718096;
+        }
+
+        /* Low Stock Modal */
+        .low-stock-content {
+            padding: 1.5rem;
+        }
+
+        .threshold-setting {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f7fafc;
+            border-radius: 4px;
+        }
+
+        .threshold-setting label {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .threshold-setting input {
+            width: 80px;
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+
+        .low-stock-item {
+            padding: 1rem;
+            border: 1px solid #fed7d7;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            background: #fff5f5;
+        }
+
+        .low-stock-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: #c53030;
+        }
+
+        .low-stock-item p {
+            margin: 0;
+            color: #4a5568;
+        }
+
+        /* Message Container */
+        .message-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 2000;
+        }
+
+        .message {
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.success {
+            background: #38a169;
+        }
+
+        .message.error {
+            background: #e53e3e;
+        }
+
+        .message.warning {
+            background: #ed8936;
+        }
+
+        .message.info {
+            background: #3182ce;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Button Variants */
+        .btn-primary {
+            background: #3182ce;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #2c5aa0;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .inventory-container {
+                padding: 1rem;
+            }
+            
+            .inventory-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .inventory-actions {
+                flex-direction: column;
+            }
+            
+            .filter-section {
+                flex-direction: column;
+            }
+            
+            .filter-section input {
+                width: 100%;
+            }
+            
+            .stats-overview {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .inventory-table-container {
+                overflow-x: auto;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 1rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">MSME Inventory</div>
+            <div style="flex:1"></div>
+            <div class="navbar-buttons">
+                <a href="../dashboard/dashboard.html" class="btn btn-outline">Dashboard</a>
+                <button id="logoutBtn" class="btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="inventory-container">
+        <div class="inventory-header">
+            <h1>Inventory Management</h1>
+            <div class="inventory-actions">
+                <button id="addItemBtn" class="btn btn-primary">Add New Item</button>
+                <button id="lowStockBtn" class="btn btn-warning">Low Stock Alert</button>
+                <div class="filter-section">
+                    <select id="typeFilter">
+                        <option value="">All Types</option>
+                        <option value="raw_material">Raw Materials</option>
+                        <option value="finished_product">Finished Products</option>
+                    </select>
+                    <input type="text" id="searchInput" placeholder="Search items...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <h3>Total Items</h3>
+                <span id="totalItems">0</span>
+            </div>
+            <div class="stat-card">
+                <h3>Raw Materials</h3>
+                <span id="rawMaterials">0</span>
+            </div>
+            <div class="stat-card">
+                <h3>Finished Products</h3>
+                <span id="finishedProducts">0</span>
+            </div>
+            <div class="stat-card">
+                <h3>Low Stock Items</h3>
+                <span id="lowStockCount">0</span>
+            </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="inventory-table-container">
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Price</th>
+                        <th>Total Value</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryTableBody">
+                    <!-- Items will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+
+        <!-- No Data Message -->
+        <div id="noDataMessage" class="no-data" style="display: none;">
+            <p>No inventory items found. Click "Add New Item" to get started.</p>
+        </div>
+    </main>
+
+    <!-- Add/Edit Item Modal -->
+    <div id="itemModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Item</h2>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <form id="itemForm">
+                <div style="padding: 1.5rem;">
+                    <div class="form-group">
+                        <label for="itemName">Item Name *</label>
+                        <input type="text" id="itemName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemType">Type *</label>
+                        <select id="itemType" name="type" required>
+                            <option value="">Select Type</option>
+                            <option value="raw_material">Raw Material</option>
+                            <option value="finished_product">Finished Product</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemQuantity">Quantity *</label>
+                        <input type="number" id="itemQuantity" name="quantity" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemUnit">Unit *</label>
+                        <input type="text" id="itemUnit" name="unit" placeholder="e.g., kg, pcs, liter" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemPrice">Price per Unit</label>
+                        <input type="number" id="itemPrice" name="price" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemDescription">Description</label>
+                        <textarea id="itemDescription" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="submitBtn" class="btn btn-primary">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Low Stock Modal -->
+    <div id="lowStockModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Low Stock Alert</h2>
+                <span class="close" id="closeLowStockModal">&times;</span>
+            </div>
+            <div class="low-stock-content">
+                <div class="threshold-setting">
+                    <label for="stockThreshold">Alert Threshold:</label>
+                    <input type="number" id="stockThreshold" value="10" min="1">
+                    <button id="checkLowStockBtn" class="btn btn-primary">Check Low Stock</button>
+                </div>
+                <div id="lowStockList">
+                    <!-- Low stock items will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="messageContainer" class="message-container"></div>
+
+    <script>
+        // Global variables
+        let inventoryItems = [];
+        let currentEditId = null;
+        const baseURL = 'http://localhost:5001';
+        const authToken = localStorage.getItem('token');
+
+        // Check authentication on page load
+        if (!authToken) {
+            window.location.href = '../auth/login.html';
+        }
+
+        // Helper functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message ' + type;
+            messageEl.textContent = message;
+            
+            container.appendChild(messageEl);
+            
+            setTimeout(() => {
+                if (messageEl.parentNode) {
+                    messageEl.parentNode.removeChild(messageEl);
+                }
+            }, 5000);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+            document.querySelector('.inventory-table-container').style.display = show ? 'none' : 'block';
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+
+                if (response.status === 401) {
+                    showMessage('Session expired. Please login again.', 'error');
+                    localStorage.removeItem('token');
+                    setTimeout(() => window.location.href = '../auth/login.html', 2000);
+                    return null;
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Request failed');
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Request failed:', error);
+                showMessage(error.message, 'error');
+                return null;
+            }
+        }
+
+        function updateStats() {
+            const totalItems = inventoryItems.length;
+            const rawMaterials = inventoryItems.filter(item => item.type === 'raw_material').length;
+            const finishedProducts = inventoryItems.filter(item => item.type === 'finished_product').length;
+            const lowStockItems = inventoryItems.filter(item => item.quantity <= 10).length;
+            
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('rawMaterials').textContent = rawMaterials;
+            document.getElementById('finishedProducts').textContent = finishedProducts;
+            document.getElementById('lowStockCount').textContent = lowStockItems;
+        }
+
+        function renderInventory(itemsToRender = null) {
+            const items = itemsToRender || inventoryItems;
+            const tbody = document.getElementById('inventoryTableBody');
+            const noDataMsg = document.getElementById('noDataMessage');
+            
+            if (items.length === 0) {
+                tbody.innerHTML = '';
+                noDataMsg.style.display = 'block';
+                return;
+            }
+            
+            noDataMsg.style.display = 'none';
+            
+            tbody.innerHTML = items.map(item => {
+                const totalValue = (parseFloat(item.price || 0) * parseInt(item.quantity || 0)).toFixed(2);
+                const isLowStock = item.quantity <= 10;
+                
+                return `
+                    <tr>
+                        <td>${escapeHtml(item.name)}</td>
+                        <td>
+                            <span class="type-badge type-${item.type}">
+                                ${item.type.replace('_', ' ')}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="${isLowStock ? 'quantity-low' : 'quantity-normal'}">
+                                ${item.quantity}
+                            </span>
+                        </td>
+                        <td>${escapeHtml(item.unit)}</td>
+                        <td>$${parseFloat(item.price || 0).toFixed(2)}</td>
+                        <td>$${totalValue}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-small btn-edit" onclick="editItem('${item.item_id}')">
+                                    Edit
+                                </button>
+                                <button class="btn-small btn-delete" onclick="deleteItem('${item.item_id}')">
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function loadInventory() {
+            try {
+                showLoading(true);
+                const data = await makeRequest(baseURL + '/items');
+                
+                if (data) {
+                    inventoryItems = data.items || [];
+                    renderInventory();
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+                showMessage('Failed to load inventory items', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function filterItems() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('typeFilter').value;
+            
+            let filteredItems = inventoryItems;
+            
+            if (searchTerm) {
+                filteredItems = filteredItems.filter(item => 
+                    item.name.toLowerCase().includes(searchTerm) ||
+                    (item.description && item.description.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            if (typeFilter) {
+                filteredItems = filteredItems.filter(item => item.type === typeFilter);
+            }
+            
+            renderInventory(filteredItems);
+        }
+
+        function openAddModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Item';
+            document.getElementById('submitBtn').textContent = 'Add Item';
+            document.getElementById('itemForm').reset();
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        async function editItem(itemId) {
+            try {
+                const response = await makeRequest(baseURL + '/items/' + itemId);
+                if (!response) return;
+
+                const item = response.item;
+                
+                currentEditId = itemId;
+                document.getElementById('modalTitle').textContent = 'Edit Item';
+                document.getElementById('submitBtn').textContent = 'Update Item';
+                
+                // Populate form
+                document.getElementById('itemName').value = item.name;
+                document.getElementById('itemType').value = item.type;
+                document.getElementById('itemQuantity').value = item.quantity;
+                document.getElementById('itemUnit').value = item.unit;
+                document.getElementById('itemPrice').value = item.price || '';
+                document.getElementById('itemDescription').value = item.description || '';
+                
+                document.getElementById('itemModal').style.display = 'flex';
+            } catch (error) {
+                console.error('Error loading item:', error);
+                showMessage('Failed to load item details', 'error');
+            }
+        }
+
+        async function deleteItem(itemId) {
+            if (!confirm('Are you sure you want to delete this item?')) {
+                return;
+            }
+
+            try {
+                const response = await makeRequest(baseURL + '/items/' + itemId, {
+                    method: 'DELETE'
+                });
+
+                if (response) {
+                    showMessage('Item deleted successfully', 'success');
+                    loadInventory();
+                }
+            } catch (error) {
+                console.error('Error deleting item:', error);
+                showMessage('Failed to delete item', 'error');
+            }
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const itemData = {
+                name: formData.get('name'),
+                type: formData.get('type'),
+                quantity: parseInt(formData.get('quantity')),
+                unit: formData.get('unit'),
+                price: parseFloat(formData.get('price')) || 0,
+                description: formData.get('description')
+            };
+
+            try {
+                const url = currentEditId 
+                    ? baseURL + '/items/' + currentEditId
+                    : baseURL + '/items';
+                
+                const method = currentEditId ? 'PUT' : 'POST';
+                
+                const response = await makeRequest(url, {
+                    method: method,
+                    body: JSON.stringify(itemData)
+                });
+
+                if (response) {
+                    const action = currentEditId ? 'updated' : 'created';
+                    showMessage('Item ' + action + ' successfully', 'success');
+                    closeModal();
+                    loadInventory();
+                }
+            } catch (error) {
+                console.error('Error saving item:', error);
+                showMessage(error.message, 'error');
+            }
+        }
+
+        async function checkLowStock() {
+            try {
+                const threshold = document.getElementById('stockThreshold').value;
+                const response = await makeRequest(baseURL + '/items/low-stock?threshold=' + threshold);
+
+                if (response) {
+                    renderLowStockItems(response.items);
+                }
+            } catch (error) {
+                console.error('Error checking low stock:', error);
+                showMessage('Failed to check low stock items', 'error');
+            }
+        }
+
+        function renderLowStockItems(items) {
+            const container = document.getElementById('lowStockList');
+            
+            if (items.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #38a169; font-weight: 500;">No low stock items found!</p>';
+                return;
+            }
+            
+            container.innerHTML = items.map(item => `
+                <div class="low-stock-item">
+                    <h4>${escapeHtml(item.name)}</h4>
+                    <p><strong>Current Stock:</strong> ${item.quantity} ${item.unit}</p>
+                    <p><strong>Type:</strong> ${item.type.replace('_', ' ')}</p>
+                    ${item.description ? '<p><strong>Description:</strong> ' + escapeHtml(item.description) + '</p>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function closeModal() {
+            document.getElementById('itemModal').style.display = 'none';
+            currentEditId = null;
+        }
+
+        function closeLowStockModal() {
+            document.getElementById('lowStockModal').style.display = 'none';
+        }
+
+        function openLowStockModal() {
+            document.getElementById('lowStockModal').style.display = 'flex';
+            checkLowStock();
+        }
+
+        async function logout() {
+            try {
+                await fetch('http://localhost:5000/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                localStorage.removeItem('token');
+                window.location.href = '../auth/login.html';
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load inventory data
+            loadInventory();
+
+            // Button event listeners
+            document.getElementById('addItemBtn').addEventListener('click', openAddModal);
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeModal);
+            document.getElementById('lowStockBtn').addEventListener('click', openLowStockModal);
+            document.getElementById('closeLowStockModal').addEventListener('click', closeLowStockModal);
+            document.getElementById('checkLowStockBtn').addEventListener('click', checkLowStock);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+
+            // Form submission
+            document.getElementById('itemForm').addEventListener('submit', handleFormSubmit);
+
+            // Search and filter
+            document.getElementById('searchInput').addEventListener('input', filterItems);
+            document.getElementById('typeFilter').addEventListener('change', filterItems);
+
+            // Close modals when clicking outside
+            document.getElementById('itemModal').addEventListener('click', function(e) {
+                if (e.target.id === 'itemModal') closeModal();
+            });
+            
+            document.getElementById('lowStockModal').addEventListener('click', function(e) {
+                if (e.target.id === 'lowStockModal') closeLowStockModal();
+            });
+        });
+    </script>
+</body>
+</html>

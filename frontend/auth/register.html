@@ -46,6 +46,7 @@
             const errorDiv = document.getElementById('register-error');
             errorDiv.style.display = 'none';
             errorDiv.textContent = '';
+            
             try {
                 const res = await fetch('http://localhost:5000/register', {
                     method: 'POST',
@@ -54,7 +55,21 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    window.location.href = '../dashboard/dashboard.html';
+                    // After successful registration, automatically login
+                    const loginRes = await fetch('http://localhost:5000/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const loginData = await loginRes.json();
+                    if (loginRes.ok) {
+                        // Store token and redirect
+                        localStorage.setItem('token', loginData.token);
+                        window.location.href = '../dashboard/dashboard.html';
+                    } else {
+                        // Registration succeeded but login failed, redirect to login page
+                        window.location.href = 'login.html';
+                    }
                 } else {
                     errorDiv.textContent = data.error || 'Registrasi gagal';
                     errorDiv.style.display = 'block';

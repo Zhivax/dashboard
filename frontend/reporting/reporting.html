@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - MSME Inventory</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .reporting-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f8f9fa;
+            min-height: 80vh;
+        }
+
+        .reporting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .reporting-header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin: 0;
+        }
+
+        .reporting-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .filter-section select,
+        .filter-section input {
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        /* Report Type Navigation */
+        .report-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: #fff;
+            padding: 0.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .report-nav-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4a5568;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .report-nav-btn:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        .report-nav-btn.active {
+            background: #3182ce;
+            color: white;
+        }
+
+        /* Dashboard Overview */
+        .dashboard-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .overview-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #3182ce;
+        }
+
+        .overview-card h3 {
+            margin: 0 0 1rem 0;
+            color: #2d3748;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-item {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2d3748;
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Report Content */
+        .report-content {
+            display: none;
+        }
+
+        .report-content.active {
+            display: block;
+        }
+
+        .chart-container {
+            background: #fff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Data Tables */
+        .data-table {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: #f7fafc;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            color: #2d3748;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        /* Status badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: #faf089;
+            color: #744210;
+        }
+
+        .status-processing {
+            background: #bee3f8;
+            color: #2c5aa0;
+        }
+
+        .status-completed {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        .status-cancelled {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .status-low-stock {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .status-in-stock {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        /* Export buttons */
+        .export-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: auto;
+        }
+
+        .btn-export {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #4a5568;
+            transition: all 0.2s;
+        }
+
+        .btn-export:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+        }
+
+        /* Loading states */
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3182ce;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Date range picker */
+        .date-range {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .date-range input {
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        /* Button variants */
+        .btn-primary {
+            background: #3182ce;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #2c5aa0;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-success {
+            background: #38a169;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-success:hover {
+            background: #2f855a;
+        }
+
+        /* Message Container */
+        .message-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 2000;
+        }
+
+        .message {
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.success {
+            background: #38a169;
+        }
+
+        .message.error {
+            background: #e53e3e;
+        }
+
+        .message.warning {
+            background: #ed8936;
+        }
+
+        .message.info {
+            background: #3182ce;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* No data state */
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #718096;
+        }
+
+        .no-data-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .reporting-container {
+                padding: 1rem;
+            }
+            
+            .reporting-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .reporting-actions {
+                flex-direction: column;
+            }
+            
+            .filter-section {
+                flex-direction: column;
+            }
+            
+            .dashboard-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .metric-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .report-nav {
+                flex-direction: column;
+            }
+            
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .export-buttons {
+                margin-left: 0;
+            }
+            
+            .date-range {
+                flex-direction: column;
+            }
+            
+            .table-responsive {
+                font-size: 0.8rem;
+            }
+            
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .reporting-actions,
+            .report-nav,
+            .btn-export {
+                display: none;
+            }
+            
+            .chart-placeholder {
+                background: #f0f0f0;
+                color: #333;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">MSME Inventory</div>
+            <div style="flex:1"></div>
+            <div class="navbar-buttons">
+                <a href="../dashboard/dashboard.html" class="btn btn-outline">Dashboard</a>
+                <button id="logoutBtn" class="btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="reporting-container">
+        <div class="reporting-header">
+            <h1>Reports & Analytics</h1>
+            <div class="reporting-actions">
+                <div class="date-range">
+                    <label for="startDate">From:</label>
+                    <input type="date" id="startDate" name="startDate">
+                    <label for="endDate">To:</label>
+                    <input type="date" id="endDate" name="endDate">
+                </div>
+                <button id="generateReportBtn" class="btn btn-primary">Generate Report</button>
+                <button id="refreshDataBtn" class="btn btn-secondary">Refresh Data</button>
+            </div>
+        </div>
+
+        <!-- Report Navigation -->
+        <div class="report-nav">
+            <button class="report-nav-btn active" data-report="dashboard">Dashboard Overview</button>
+            <button class="report-nav-btn" data-report="inventory">Inventory Report</button>
+            <button class="report-nav-btn" data-report="sales">Sales Report</button>
+            <button class="report-nav-btn" data-report="orders">Order Report</button>
+            <button class="report-nav-btn" data-report="trends">Trends & Analytics</button>
+        </div>
+
+        <!-- Dashboard Overview -->
+        <div id="dashboardReport" class="report-content active">
+            <div class="dashboard-overview">
+                <div class="overview-card">
+                    <h3>📦 Inventory Summary</h3>
+                    <div class="metric-grid">
+                        <div class="metric-item">
+                            <span class="metric-value" id="totalItems">-</span>
+                            <span class="metric-label">Total Items</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value" id="lowStockItems">-</span>
+                            <span class="metric-label">Low Stock</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value" id="inventoryValue">-</span>
+                            <span class="metric-label">Total Value</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overview-card">
+                    <h3>🛒 Order Summary</h3>
+                    <div class="metric-grid">
+                        <div class="metric-item">
+                            <span class="metric-value" id="totalOrders">-</span>
+                            <span class="metric-label">Total Orders</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value" id="pendingOrders">-</span>
+                            <span class="metric-label">Pending</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value" id="completedOrders">-</span>
+                            <span class="metric-label">Completed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overview-card">
+                    <h3>💰 Revenue Summary</h3>
+                    <div class="metric-grid">
+                        <div class="metric-item">
+                            <span class="metric-value" id="totalRevenue">-</span>
+                            <span class="metric-label">Total Revenue</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value" id="avgOrderValue">-</span>
+                            <span class="metric-label">Avg Order</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value" id="monthlyGrowth">-</span>
+                            <span class="metric-label">Growth</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Sales Trend (Last 30 Days)</h3>
+                    <div class="export-buttons">
+                        <button class="btn-export" onclick="exportChart('sales-trend')">📊 Export Chart</button>
+                    </div>
+                </div>
+                <div class="chart-placeholder" id="salesTrendChart">
+                    📈 Sales Trend Chart Will Load Here
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Report -->
+        <div id="inventoryReport" class="report-content">
+            <div class="data-table">
+                <div class="table-header">
+                    <h3 class="table-title">Inventory Status Report</h3>
+                </div>
+                <div class="table-responsive">
+                    <table id="inventoryTable">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Type</th>
+                                <th>Current Stock</th>
+                                <th>Unit</th>
+                                <th>Unit Price</th>
+                                <th>Total Value</th>
+                                <th>Status</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <tr>
+                                <td colspan="8" class="no-data">
+                                    <div class="no-data-icon">📦</div>
+                                    <p>Loading inventory data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Low Stock Alert -->
+            <div class="chart-container" style="margin-top: 1.5rem;">
+                <div class="chart-header">
+                    <h3 class="chart-title">🚨 Low Stock Items</h3>
+                    <div class="export-buttons">
+                        <button class="btn-export" onclick="exportTable('lowStock')">📄 Export List</button>
+                    </div>
+                </div>
+                <div id="lowStockList">
+                    <p class="no-data">Loading low stock items...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Report -->
+        <div id="salesReport" class="report-content">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Sales Performance</h3>
+                    <div class="export-buttons">
+                        <button class="btn-export" onclick="exportChart('sales-performance')">📊 Export Chart</button>
+                        <button class="btn-export" onclick="exportTable('sales')">📄 Export Data</button>
+                    </div>
+                </div>
+                <div class="chart-placeholder" id="salesChart">
+                    📊 Sales Performance Chart Will Load Here
+                </div>
+            </div>
+
+            <div class="data-table" style="margin-top: 1.5rem;">
+                <div class="table-header">
+                    <h3 class="table-title">Sales Summary</h3>
+                </div>
+                <div class="table-responsive">
+                    <table id="salesTable">
+                        <thead>
+                            <tr>
+                                <th>Period</th>
+                                <th>Orders</th>
+                                <th>Revenue</th>
+                                <th>Avg Order Value</th>
+                                <th>Growth Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTableBody">
+                            <tr>
+                                <td colspan="5" class="no-data">
+                                    <div class="no-data-icon">💰</div>
+                                    <p>Loading sales data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Report -->
+        <div id="orderReport" class="report-content">
+            <div class="data-table">
+                <div class="table-header">
+                    <h3 class="table-title">Order Status Report</h3>
+                </div>
+                <div class="table-responsive">
+                    <table id="orderTable">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderTableBody">
+                            <tr>
+                                <td colspan="7" class="no-data">
+                                    <div class="no-data-icon">🛒</div>
+                                    <p>Loading order data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trends & Analytics -->
+        <div id="trendsReport" class="report-content">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Business Trends</h3>
+                    <div class="export-buttons">
+                        <button class="btn-export" onclick="exportChart('trends')">📊 Export Chart</button>
+                    </div>
+                </div>
+                <div class="chart-placeholder" id="trendsChart">
+                    📈 Business Trends Chart Will Load Here
+                </div>
+            </div>
+
+            <div class="dashboard-overview" style="margin-top: 1.5rem;">
+                <div class="overview-card">
+                    <h3>📊 Performance Metrics</h3>
+                    <div class="metric-grid">
+                        <div class="metric-item">
+                            <span class="metric-value" id="conversionRate">-</span>
+                            <span class="metric-label">Conversion Rate</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value" id="customerSatisfaction">-</span>
+                            <span class="metric-label">Satisfaction</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overview-card">
+                    <h3>🎯 Forecasting</h3>
+                    <div class="metric-grid">
+                        <div class="metric-item">
+                            <span class="metric-value" id="nextMonthProjection">-</span>
+                            <span class="metric-label">Next Month</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value" id="quarterProjection">-</span>
+                            <span class="metric-label">This Quarter</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading report data...</p>
+        </div>
+    </main>
+
+    <!-- Success/Error Messages -->
+    <div id="messageContainer" class="message-container"></div>
+
+    <script>
+        // Global variables
+        const baseURL = 'http://localhost:5004';
+        const inventoryBaseURL = 'http://localhost:5001';
+        const orderBaseURL = 'http://localhost:5002';
+        const authToken = localStorage.getItem('token');
+        let currentReport = 'dashboard';
+        let reportData = {};
+
+        // Check authentication on page load
+        if (!authToken) {
+            window.location.href = '../auth/login.html';
+        }
+
+        // Helper functions
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message ' + type;
+            messageEl.textContent = message;
+            
+            container.appendChild(messageEl);
+            
+            setTimeout(() => {
+                if (messageEl.parentNode) {
+                    messageEl.parentNode.removeChild(messageEl);
+                }
+            }, 5000);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(amount || 0);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            try {
+                return new Date(dateString).toLocaleDateString('id-ID');
+            } catch (error) {
+                return dateString;
+            }
+        }
+
+        function formatPercentage(value) {
+            return (value || 0).toFixed(1) + '%';
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+
+                if (response.status === 401) {
+                    showMessage('Session expired. Please login again.', 'error');
+                    localStorage.removeItem('token');
+                    setTimeout(() => window.location.href = '../auth/login.html', 2000);
+                    return null;
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Network error' }));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Request failed:', error);
+                if (error.name !== 'TypeError') {
+                    showMessage(error.message, 'error');
+                } else {
+                    showMessage('Network error. Please check your connection.', 'error');
+                }
+                return null;
+            }
+        }
+
+        // Report switching
+        function switchReport(reportType) {
+            // Update navigation
+            document.querySelectorAll('.report-nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-report="${reportType}"]`).classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.report-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${reportType}Report`).classList.add('active');
+
+            currentReport = reportType;
+            loadReportData(reportType);
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const data = await makeRequest(`${baseURL}/reports/dashboard`);
+                
+                if (data && data.dashboard) {
+                    const { inventory, orders } = data.dashboard;
+                    
+                    // Update inventory metrics
+                    document.getElementById('totalItems').textContent = inventory.total_items || 0;
+                    document.getElementById('lowStockItems').textContent = inventory.low_stock_items || 0;
+                    document.getElementById('inventoryValue').textContent = formatCurrency(inventory.total_value);
+                    
+                    // Update order metrics
+                    document.getElementById('totalOrders').textContent = orders.total_orders || 0;
+                    document.getElementById('pendingOrders').textContent = orders.pending_orders || 0;
+                    document.getElementById('completedOrders').textContent = orders.completed_orders || 0;
+                    
+                    // Update revenue metrics
+                    const totalRevenue = orders.total_revenue || 0;
+                    const avgOrderValue = orders.completed_orders > 0 ? totalRevenue / orders.completed_orders : 0;
+                    
+                    document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+                    document.getElementById('avgOrderValue').textContent = formatCurrency(avgOrderValue);
+                    document.getElementById('monthlyGrowth').textContent = '+12.5%'; // Mock data
+                    
+                    reportData.dashboard = data.dashboard;
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showMessage('Failed to load dashboard data', 'error');
+            }
+        }
+
+        // Load inventory report
+        async function loadInventoryReport() {
+            try {
+                const [inventoryData, reportData] = await Promise.all([
+                    makeRequest(`${inventoryBaseURL}/items`),
+                    makeRequest(`${baseURL}/reports/inventory`)
+                ]);
+                
+                if (inventoryData && inventoryData.items) {
+                    renderInventoryTable(inventoryData.items);
+                }
+                
+                if (reportData && reportData.report) {
+                    renderLowStockItems(reportData.report.low_stock_items);
+                }
+            } catch (error) {
+                console.error('Error loading inventory report:', error);
+                showMessage('Failed to load inventory report', 'error');
+            }
+        }
+
+        function renderInventoryTable(items) {
+            const tbody = document.getElementById('inventoryTableBody');
+            
+            if (!items || items.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="no-data">
+                            <div class="no-data-icon">📦</div>
+                            <p>No inventory items found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = items.map(item => {
+                const totalValue = (item.quantity || 0) * (item.price || 0);
+                const stockStatus = (item.quantity || 0) <= 10 ? 'low-stock' : 'in-stock';
+                const stockLabel = (item.quantity || 0) <= 10 ? 'Low Stock' : 'In Stock';
+                
+                return `
+                    <tr>
+                        <td>${item.name || '-'}</td>
+                        <td>${(item.type || '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</td>
+                        <td>${item.quantity || 0}</td>
+                        <td>${item.unit || '-'}</td>
+                        <td>${formatCurrency(item.price)}</td>
+                        <td>${formatCurrency(totalValue)}</td>
+                        <td><span class="status-badge status-${stockStatus}">${stockLabel}</span></td>
+                        <td>${formatDate(item.updated_at)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderLowStockItems(lowStockItems) {
+            const container = document.getElementById('lowStockList');
+            
+            if (!lowStockItems || lowStockItems.length === 0) {
+                container.innerHTML = '<p class="no-data">✅ No low stock items found</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+                    ${lowStockItems.map(item => `
+                        <div style="background: #fff5f5; border: 1px solid #fed7d7; border-radius: 8px; padding: 1rem;">
+                            <h4 style="margin: 0 0 0.5rem 0; color: #c53030;">${item.name}</h4>
+                            <p style="margin: 0.25rem 0; color: #4a5568;">Current Stock: <strong>${item.quantity} ${item.unit}</strong></p>
+                            <p style="margin: 0.25rem 0; color: #4a5568;">Type: ${(item.type || '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                            <span class="status-badge status-low-stock">🚨 Restock Needed</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Load sales report
+        async function loadSalesReport() {
+            try {
+                const data = await makeRequest(`${baseURL}/reports/sales`);
+                
+                if (data && data.report) {
+                    renderSalesTable(data.report);
+                }
+            } catch (error) {
+                console.error('Error loading sales report:', error);
+                showMessage('Failed to load sales report', 'error');
+            }
+        }
+
+        function renderSalesTable(salesData) {
+            const tbody = document.getElementById('salesTableBody');
+            
+            // Mock sales data by period
+            const periodicData = [
+                {
+                    period: 'This Month',
+                    orders: salesData.completed_orders || 0,
+                    revenue: salesData.total_revenue || 0,
+                    avgOrderValue: salesData.completed_orders > 0 ? (salesData.total_revenue / salesData.completed_orders) : 0,
+                    growthRate: 12.5
+                },
+                {
+                    period: 'Last Month',
+                    orders: Math.max(0, (salesData.completed_orders || 0) - 5),
+                    revenue: Math.max(0, (salesData.total_revenue || 0) * 0.85),
+                    avgOrderValue: 0,
+                    growthRate: 8.3
+                }
+            ];
+            
+            periodicData[1].avgOrderValue = periodicData[1].orders > 0 ? periodicData[1].revenue / periodicData[1].orders : 0;
+            
+            tbody.innerHTML = periodicData.map(period => `
+                <tr>
+                    <td>${period.period}</td>
+                    <td>${period.orders}</td>
+                    <td>${formatCurrency(period.revenue)}</td>
+                    <td>${formatCurrency(period.avgOrderValue)}</td>
+                    <td style="color: ${period.growthRate > 0 ? '#38a169' : '#e53e3e'};">
+                        ${period.growthRate > 0 ? '↗️' : '↘️'} ${formatPercentage(period.growthRate)}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Load order report
+        async function loadOrderReport() {
+            try {
+                const data = await makeRequest(`${orderBaseURL}/orders`);
+                
+                if (data && data.orders) {
+                    renderOrderTable(data.orders);
+                }
+            } catch (error) {
+                console.error('Error loading order report:', error);
+                showMessage('Failed to load order report', 'error');
+            }
+        }
+
+        function renderOrderTable(orders) {
+            const tbody = document.getElementById('orderTableBody');
+            
+            if (!orders || orders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="no-data">
+                            <div class="no-data-icon">🛒</div>
+                            <p>No orders found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = orders.slice(0, 20).map(order => `
+                <tr>
+                    <td style="font-family: monospace;">${(order.order_id || '').substring(0, 8)}...</td>
+                    <td>${order.customer_name || '-'}</td>
+                    <td>${formatDate(order.created_at)}</td>
+                    <td>-</td>
+                    <td>${formatCurrency(order.total_amount)}</td>
+                    <td><span class="status-badge status-${order.status || 'pending'}">${(order.status || 'pending').replace(/\b\w/g, l => l.toUpperCase())}</span></td>
+                    <td>
+                        <button class="btn-export" onclick="viewOrderDetails('${order.order_id}')">👁️ View</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Load trends report
+        async function loadTrendsReport() {
+            // Mock trends data
+            document.getElementById('conversionRate').textContent = '68.4%';
+            document.getElementById('customerSatisfaction').textContent = '4.7/5';
+            document.getElementById('nextMonthProjection').textContent = formatCurrency(15000000);
+            document.getElementById('quarterProjection').textContent = formatCurrency(45000000);
+        }
+
+        // Report data loading dispatcher
+        async function loadReportData(reportType) {
+            showLoading(true);
+            
+            try {
+                switch (reportType) {
+                    case 'dashboard':
+                        await loadDashboardData();
+                        break;
+                    case 'inventory':
+                        await loadInventoryReport();
+                        break;
+                    case 'sales':
+                        await loadSalesReport();
+                        break;
+                    case 'orders':
+                        await loadOrderReport();
+                        break;
+                    case 'trends':
+                        await loadTrendsReport();
+                        break;
+                }
+            } catch (error) {
+                console.error('Error loading report data:', error);
+                showMessage(`Failed to load ${reportType} report`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Export functions
+        function exportChart(chartType) {
+            showMessage(`Exporting ${chartType} chart...`, 'info');
+            // Implementation would depend on charting library
+        }
+
+        function exportTable(tableType) {
+            showMessage(`Exporting ${tableType} data...`, 'info');
+            // Implementation for CSV/Excel export
+        }
+
+        function viewOrderDetails(orderId) {
+            showMessage(`Opening order details for ${orderId}...`, 'info');
+            // Navigate to order details
+        }
+
+        // Generate custom report
+        async function generateCustomReport() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                showMessage('Please select both start and end dates', 'warning');
+                return;
+            }
+            
+            showMessage('Generating custom report...', 'info');
+            await loadReportData(currentReport);
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await fetch('http://localhost:5000/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                localStorage.removeItem('token');
+                window.location.href = '../auth/login.html';
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default date range (last 30 days)
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 30);
+            
+            document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+            document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+            
+            // Load initial data
+            loadReportData('dashboard');
+            
+            // Event listeners
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('generateReportBtn').addEventListener('click', generateCustomReport);
+            document.getElementById('refreshDataBtn').addEventListener('click', () => loadReportData(currentReport));
+            
+            // Report navigation
+            document.querySelectorAll('.report-nav-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    switchReport(this.dataset.report);
+                });
+            });
+        });
+
+        // Make functions global for onclick handlers
+        window.exportChart = exportChart;
+        window.exportTable = exportTable;
+        window.viewOrderDetails = viewOrderDetails;
+    </script>
+</body>
+</html>

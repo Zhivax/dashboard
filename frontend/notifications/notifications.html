@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - MSME Inventory</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .notifications-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f8f9fa;
+            min-height: 80vh;
+        }
+
+        .notifications-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .notifications-header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin: 0;
+        }
+
+        .notifications-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .filter-section select,
+        .filter-section input {
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 4px solid #3182ce;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card span {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .stat-card:nth-child(2) {
+            border-left-color: #e53e3e;
+        }
+
+        .stat-card:nth-child(3) {
+            border-left-color: #38a169;
+        }
+
+        .stat-card:nth-child(4) {
+            border-left-color: #ed8936;
+        }
+
+        /* Notifications List */
+        .notifications-list {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .notification-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item:hover {
+            background: #f7fafc;
+        }
+
+        .notification-item.unread {
+            background: #f0fff4;
+            border-left: 4px solid #38a169;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .notification-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .notification-type {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .type-info {
+            background: #bee3f8;
+            color: #2c5aa0;
+        }
+
+        .type-success {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        .type-warning {
+            background: #faf089;
+            color: #744210;
+        }
+
+        .type-error {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .notification-message {
+            color: #4a5568;
+            line-height: 1.5;
+            margin: 0.5rem 0;
+        }
+
+        .notification-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-mark-read {
+            background: #3182ce;
+            color: white;
+        }
+
+        .btn-mark-read:hover {
+            background: #2c5aa0;
+        }
+
+        .btn-delete {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c53030;
+        }
+
+        /* Warning button for low stock check */
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+
+        /* Compose Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #2d3748;
+        }
+
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #718096;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .close:hover {
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49,130,206,0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        /* Loading and Empty States */
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3182ce;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #718096;
+        }
+
+        /* Message Container */
+        .message-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 2000;
+        }
+
+        .message {
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.success {
+            background: #38a169;
+        }
+
+        .message.error {
+            background: #e53e3e;
+        }
+
+        .message.warning {
+            background: #ed8936;
+        }
+
+        .message.info {
+            background: #3182ce;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Button Variants */
+        .btn-primary {
+            background: #3182ce;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #2c5aa0;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-success {
+            background: #38a169;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-success:hover {
+            background: #2f855a;
+        }
+
+        /* Auto refresh indicator */
+        .auto-refresh-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: #4a5568;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .auto-refresh-indicator.active {
+            color: #38a169;
+        }
+        
+        .refresh-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #38a169;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        /* Low stock notification styling */
+        .notification-item.low-stock {
+            border-left: 4px solid #e53e3e;
+            background: linear-gradient(90deg, #fff5f5 0%, #ffffff 100%);
+        }
+        
+        .low-stock-badge {
+            background: #e53e3e;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .notifications-container {
+                padding: 1rem;
+            }
+            
+            .notifications-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .notifications-actions {
+                flex-direction: column;
+            }
+            
+            .filter-section {
+                flex-direction: column;
+            }
+            
+            .stats-overview {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .notification-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .notification-meta {
+                flex-wrap: wrap;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 1rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* Notification Badge */
+        .notification-badge {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 8px;
+            height: 8px;
+            background: #38a169;
+            border-radius: 50%;
+        }
+
+        .unread-indicator {
+            font-weight: bold;
+            color: #38a169;
+        }
+
+        /* Email Status */
+        .email-status {
+            font-size: 0.75rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 8px;
+            margin-left: 0.5rem;
+        }
+
+        .email-sent {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        .email-not-sent {
+            background: #fed7d7;
+            color: #c53030;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">MSME Inventory</div>
+            <div style="flex:1"></div>
+            <div class="navbar-buttons">
+                <a href="../dashboard/dashboard.html" class="btn btn-outline">Dashboard</a>
+                <button id="logoutBtn" class="btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="notifications-container">
+        <div class="notifications-header">
+            <h1>Notifications</h1>
+            <div class="notifications-actions">
+                <button id="composeBtn" class="btn btn-primary">Send Notification</button>
+                <button id="checkLowStockBtn" class="btn btn-warning">Check Low Stock</button>
+                <button id="markAllReadBtn" class="btn btn-success">Mark All Read</button>
+                <button id="refreshBtn" class="btn btn-secondary">Refresh</button>
+                <div class="auto-refresh-indicator" id="autoRefreshIndicator">
+                    <div class="refresh-dot"></div>
+                    <span>Auto-refresh: ON</span>
+                </div>
+                <div class="filter-section">
+                    <select id="typeFilter">
+                        <option value="">All Types</option>
+                        <option value="info">Info</option>
+                        <option value="success">Success</option>
+                        <option value="warning">Warning</option>
+                        <option value="error">Error</option>
+                    </select>
+                    <select id="statusFilter">
+                        <option value="">All</option>
+                        <option value="unread">Unread</option>
+                        <option value="read">Read</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <h3>Total Notifications</h3>
+                <span id="totalNotifications">0</span>
+            </div>
+            <div class="stat-card">
+                <h3>Unread</h3>
+                <span id="unreadCount">0</span>
+            </div>
+            <div class="stat-card">
+                <h3>Today</h3>
+                <span id="todayCount">0</span>
+            </div>
+            <div class="stat-card">
+                <h3>This Week</h3>
+                <span id="weekCount">0</span>
+            </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div id="notificationsList" class="notifications-list">
+            <!-- Notifications will be loaded here -->
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading notifications...</p>
+        </div>
+
+        <!-- No Data Message -->
+        <div id="noDataMessage" class="no-data" style="display: none;">
+            <p>No notifications found. Send a notification to get started!</p>
+        </div>
+    </main>
+
+    <!-- Compose Notification Modal -->
+    <div id="composeModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Send Notification</h2>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <form id="composeForm">
+                <div style="padding: 1.5rem;">
+                    <div class="form-group">
+                        <label for="notificationTitle">Title *</label>
+                        <input type="text" id="notificationTitle" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="notificationMessage">Message *</label>
+                        <textarea id="notificationMessage" name="message" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="notificationType">Type *</label>
+                        <select id="notificationType" name="type" required>
+                            <option value="">Select Type</option>
+                            <option value="info">Info</option>
+                            <option value="success">Success</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="sendEmail" name="send_email">
+                            <label for="sendEmail">Also send via email</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="sendBtn" class="btn btn-primary">Send Notification</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="messageContainer" class="message-container"></div>
+
+    <script>
+        // Global variables
+        let notifications = [];
+        const baseURL = 'http://localhost:5003';
+        const inventoryBaseURL = 'http://localhost:5001';
+        const authToken = localStorage.getItem('token');
+        let autoRefreshInterval;
+        let isAutoRefreshEnabled = true;
+
+        // Check authentication on page load
+        if (!authToken) {
+            window.location.href = '../auth/login.html';
+        }
+
+        // Helper functions
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message ' + type;
+            messageEl.textContent = message;
+            
+            container.appendChild(messageEl);
+            
+            setTimeout(() => {
+                if (messageEl.parentNode) {
+                    messageEl.parentNode.removeChild(messageEl);
+                }
+            }, 5000);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+            document.getElementById('notificationsList').style.display = show ? 'none' : 'block';
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+
+                if (response.status === 401) {
+                    showMessage('Session expired. Please login again.', 'error');
+                    localStorage.removeItem('token');
+                    setTimeout(() => window.location.href = '../auth/login.html', 2000);
+                    return null;
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Network error' }));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Request failed:', error);
+                if (error.name !== 'TypeError') {
+                    showMessage(error.message, 'error');
+                } else {
+                    showMessage('Network error. Please check your connection.', 'error');
+                }
+                return null;
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Unknown';
+            
+            try {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffTime = Math.abs(now - date);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    return 'Today';
+                } else if (diffDays === 2) {
+                    return 'Yesterday';
+                } else if (diffDays <= 7) {
+                    return `${diffDays - 1} days ago`;
+                } else {
+                    return date.toLocaleDateString();
+                }
+            } catch (error) {
+                return 'Invalid date';
+            }
+        }
+
+        function updateStats() {
+            const total = notifications.length;
+            const unread = notifications.filter(n => !n.is_read).length;
+            
+            const today = new Date();
+            const todayNotifications = notifications.filter(n => {
+                try {
+                    const notifDate = new Date(n.created_at);
+                    return notifDate.toDateString() === today.toDateString();
+                } catch (error) {
+                    return false;
+                }
+            }).length;
+
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const weekNotifications = notifications.filter(n => {
+                try {
+                    const notifDate = new Date(n.created_at);
+                    return notifDate >= weekAgo;
+                } catch (error) {
+                    return false;
+                }
+            }).length;
+            
+            document.getElementById('totalNotifications').textContent = total;
+            document.getElementById('unreadCount').textContent = unread;
+            document.getElementById('todayCount').textContent = todayNotifications;
+            document.getElementById('weekCount').textContent = weekNotifications;
+        }
+
+        function renderNotifications(notificationsToRender = null) {
+            const notifs = notificationsToRender || notifications;
+            const container = document.getElementById('notificationsList');
+            const noDataMsg = document.getElementById('noDataMessage');
+            
+            if (notifs.length === 0) {
+                container.innerHTML = '';
+                noDataMsg.style.display = 'block';
+                return;
+            }
+            
+            noDataMsg.style.display = 'none';
+            
+            container.innerHTML = notifs.map(notification => {
+                // Check if this is a low stock notification
+                const isLowStock = notification.title && (
+                    notification.title.includes('Low Stock Alert') || 
+                    notification.message.includes('low stock') ||
+                    notification.message.includes('Low Stock')
+                );
+                
+                return `
+                    <div class="notification-item ${!notification.is_read ? 'unread' : ''} ${isLowStock ? 'low-stock' : ''}" data-id="${notification.id}">
+                        ${!notification.is_read ? '<div class="notification-badge"></div>' : ''}
+                        <div class="notification-header">
+                            <h3 class="notification-title">
+                                ${isLowStock ? '<span class="low-stock-badge">⚠️ LOW STOCK</span> ' : ''}
+                                ${escapeHtml(notification.title)}
+                            </h3>
+                            <div class="notification-meta">
+                                <span class="notification-type type-${notification.type || 'info'}">${notification.type || 'info'}</span>
+                                <span>${formatDate(notification.created_at)}</span>
+                                ${notification.email_sent ? 
+                                    '<span class="email-status email-sent">📧 Sent</span>' : 
+                                    '<span class="email-status email-not-sent">📧 Not sent</span>'
+                                }
+                                ${!notification.is_read ? '<span class="unread-indicator">NEW</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="notification-message">${notification.message || ''}</div>
+                        <div class="notification-actions">
+                            ${!notification.is_read ? 
+                                `<button class="btn-small btn-mark-read" onclick="markAsRead(${notification.id})">Mark as Read</button>` : 
+                                ''
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadNotifications() {
+            try {
+                showLoading(true);
+                const data = await makeRequest(baseURL + '/notifications');
+                
+                if (data) {
+                    notifications = data.notifications || [];
+                    renderNotifications();
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                showMessage('Failed to load notifications', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function filterNotifications() {
+            const typeFilter = document.getElementById('typeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            let filteredNotifications = [...notifications];
+            
+            if (typeFilter) {
+                filteredNotifications = filteredNotifications.filter(n => n.type === typeFilter);
+            }
+            
+            if (statusFilter === 'unread') {
+                filteredNotifications = filteredNotifications.filter(n => !n.is_read);
+            } else if (statusFilter === 'read') {
+                filteredNotifications = filteredNotifications.filter(n => n.is_read);
+            }
+            
+            renderNotifications(filteredNotifications);
+        }
+
+        async function markAsRead(notificationId) {
+            try {
+                const response = await makeRequest(`${baseURL}/notifications/${notificationId}/read`, {
+                    method: 'PUT'
+                });
+
+                if (response) {
+                    // Update local data
+                    const notification = notifications.find(n => n.id === notificationId);
+                    if (notification) {
+                        notification.is_read = true;
+                    }
+                    
+                    showMessage('Notification marked as read', 'success');
+                    renderNotifications();
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+                showMessage('Failed to mark notification as read', 'error');
+            }
+        }
+
+        async function markAllAsRead() {
+            try {
+                const unreadNotifications = notifications.filter(n => !n.is_read);
+                
+                if (unreadNotifications.length === 0) {
+                    showMessage('No unread notifications to mark', 'info');
+                    return;
+                }
+
+                if (!confirm(`Mark ${unreadNotifications.length} notifications as read?`)) {
+                    return;
+                }
+
+                const response = await makeRequest(`${baseURL}/notifications/mark-all-read`, {
+                    method: 'PUT'
+                });
+
+                if (response) {
+                    // Update local data
+                    notifications.forEach(n => n.is_read = true);
+                    
+                    showMessage('All notifications marked as read', 'success');
+                    renderNotifications();
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('Error marking all notifications as read:', error);
+                showMessage('Failed to mark all notifications as read', 'error');
+            }
+        }
+
+        function openComposeModal() {
+            document.getElementById('composeModal').style.display = 'flex';
+        }
+
+        function closeComposeModal() {
+            document.getElementById('composeModal').style.display = 'none';
+            document.getElementById('composeForm').reset();
+        }
+
+        async function handleComposeSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const notificationData = {
+                title: formData.get('title'),
+                message: formData.get('message'),
+                type: formData.get('type'),
+                send_email: document.getElementById('sendEmail').checked
+            };
+
+            try {
+                const response = await makeRequest(`${baseURL}/notifications/send`, {
+                    method: 'POST',
+                    body: JSON.stringify(notificationData)
+                });
+
+                if (response) {
+                    showMessage('Notification sent successfully', 'success');
+                    closeComposeModal();
+                    loadNotifications(); // Reload to show the new notification
+                }
+            } catch (error) {
+                console.error('Error sending notification:', error);
+                showMessage('Failed to send notification', 'error');
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('http://localhost:5000/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                localStorage.removeItem('token');
+                window.location.href = '../auth/login.html';
+            }
+        }
+
+        // Fixed checkLowStock function with async keyword
+        async function checkLowStock() {
+            try {
+                showMessage('Checking low stock items...', 'info');
+                
+                const response = await makeRequest(`${inventoryBaseURL}/items/check-low-stock`, {
+                    method: 'POST',
+                    body: JSON.stringify({ threshold: 10 })
+                });
+
+                if (response) {
+                    showMessage(
+                        `Low stock check completed. ${response.notifications_triggered || 0} notifications created.`, 
+                        'success'
+                    );
+                    
+                    // Refresh notifications to show new ones
+                    setTimeout(() => loadNotifications(), 2000);
+                }
+            } catch (error) {
+                console.error('Error checking low stock:', error);
+                showMessage('Failed to check low stock', 'error');
+            }
+        }
+
+        function toggleAutoRefresh() {
+            isAutoRefreshEnabled = !isAutoRefreshEnabled;
+            const indicator = document.getElementById('autoRefreshIndicator');
+            
+            if (isAutoRefreshEnabled) {
+                startAutoRefresh();
+                indicator.classList.add('active');
+                indicator.innerHTML = '<div class="refresh-dot"></div><span>Auto-refresh: ON</span>';
+            } else {
+                stopAutoRefresh();
+                indicator.classList.remove('active');
+                indicator.innerHTML = '<span>Auto-refresh: OFF</span>';
+            }
+        }
+
+        function startAutoRefresh() {
+            stopAutoRefresh(); // Clear any existing interval
+            autoRefreshInterval = setInterval(() => {
+                if (isAutoRefreshEnabled) {
+                    loadNotifications();
+                }
+            }, 30000); // Refresh every 30 seconds
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load notifications on page load
+            loadNotifications();
+            
+            // Start auto-refresh
+            startAutoRefresh();
+
+            // Button event listeners
+            document.getElementById('composeBtn').addEventListener('click', openComposeModal);
+            document.getElementById('checkLowStockBtn').addEventListener('click', checkLowStock);
+            document.getElementById('closeModal').addEventListener('click', closeComposeModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeComposeModal);
+            document.getElementById('markAllReadBtn').addEventListener('click', markAllAsRead);
+            document.getElementById('refreshBtn').addEventListener('click', loadNotifications);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+
+            // Auto-refresh toggle (click on indicator)
+            document.getElementById('autoRefreshIndicator').addEventListener('click', toggleAutoRefresh);
+
+            // Form submission
+            document.getElementById('composeForm').addEventListener('submit', handleComposeSubmit);
+
+            // Filter listeners
+            document.getElementById('typeFilter').addEventListener('change', filterNotifications);
+            document.getElementById('statusFilter').addEventListener('change', filterNotifications);
+
+            // Close modal when clicking outside
+            document.getElementById('composeModal').addEventListener('click', function(e) {
+                if (e.target.id === 'composeModal') closeComposeModal();
+            });
+
+            // Stop auto-refresh when page is hidden
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    stopAutoRefresh();
+                } else if (isAutoRefreshEnabled) {
+                    startAutoRefresh();
+                }
+            });
+
+            // Stop auto-refresh on page unload
+            window.addEventListener('beforeunload', stopAutoRefresh);
+        });
+
+        // Make functions global for onclick handlers
+        window.markAsRead = markAsRead;
+    </script>
+</body>
+</html>
