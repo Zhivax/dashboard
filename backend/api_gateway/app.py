@@ -15,7 +15,10 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'supersecretkey')
 
 # Microservice URLs (assume running on localhost with different ports)
 AUTH_SERVICE_URL = os.getenv('AUTH_SERVICE_URL', 'http://localhost:5000')
-# Add other microservice URLs as needed
+INVENTORY_SERVICE_URL = os.getenv('INVENTORY_SERVICE_URL', 'http://localhost:5001')
+ORDER_SERVICE_URL = os.getenv('ORDER_SERVICE_URL', 'http://localhost:5002')
+NOTIFICATION_SERVICE_URL = os.getenv('NOTIFICATION_SERVICE_URL', 'http://localhost:5003')
+REPORTING_SERVICE_URL = os.getenv('REPORTING_SERVICE_URL', 'http://localhost:5004')
 
 # Rate limiting (simple in-memory, for production use Redis)
 RATE_LIMIT = 100  # requests per minute
@@ -99,6 +102,90 @@ def proxy_auth(path):
     except Exception as e:
         record_failure(AUTH_SERVICE_URL)
         return jsonify({'error': 'Auth service unreachable', 'details': str(e)}), 502
+
+# Proxy for Inventory Service
+@app.route('/inventory/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@jwt_required
+def proxy_inventory(path):
+    service_url = f"{INVENTORY_SERVICE_URL}/{path}"
+    if check_circuit(INVENTORY_SERVICE_URL):
+        return jsonify({'error': 'Inventory service temporarily unavailable (circuit open)'}), 503
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=service_url,
+            headers={key: value for key, value in request.headers if key != 'Host'},
+            json=request.get_json(silent=True),
+            params=request.args,
+        )
+        reset_circuit(INVENTORY_SERVICE_URL)
+        return Response(resp.content, status=resp.status_code, content_type=resp.headers.get('Content-Type'))
+    except Exception as e:
+        record_failure(INVENTORY_SERVICE_URL)
+        return jsonify({'error': 'Inventory service unreachable', 'details': str(e)}), 502
+
+# Proxy for Order Service
+@app.route('/orders/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@jwt_required
+def proxy_orders(path):
+    service_url = f"{ORDER_SERVICE_URL}/{path}"
+    if check_circuit(ORDER_SERVICE_URL):
+        return jsonify({'error': 'Order service temporarily unavailable (circuit open)'}), 503
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=service_url,
+            headers={key: value for key, value in request.headers if key != 'Host'},
+            json=request.get_json(silent=True),
+            params=request.args,
+        )
+        reset_circuit(ORDER_SERVICE_URL)
+        return Response(resp.content, status=resp.status_code, content_type=resp.headers.get('Content-Type'))
+    except Exception as e:
+        record_failure(ORDER_SERVICE_URL)
+        return jsonify({'error': 'Order service unreachable', 'details': str(e)}), 502
+
+# Proxy for Notification Service
+@app.route('/notifications/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@jwt_required
+def proxy_notifications(path):
+    service_url = f"{NOTIFICATION_SERVICE_URL}/{path}"
+    if check_circuit(NOTIFICATION_SERVICE_URL):
+        return jsonify({'error': 'Notification service temporarily unavailable (circuit open)'}), 503
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=service_url,
+            headers={key: value for key, value in request.headers if key != 'Host'},
+            json=request.get_json(silent=True),
+            params=request.args,
+        )
+        reset_circuit(NOTIFICATION_SERVICE_URL)
+        return Response(resp.content, status=resp.status_code, content_type=resp.headers.get('Content-Type'))
+    except Exception as e:
+        record_failure(NOTIFICATION_SERVICE_URL)
+        return jsonify({'error': 'Notification service unreachable', 'details': str(e)}), 502
+
+# Proxy for Reporting Service
+@app.route('/reports/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@jwt_required
+def proxy_reports(path):
+    service_url = f"{REPORTING_SERVICE_URL}/{path}"
+    if check_circuit(REPORTING_SERVICE_URL):
+        return jsonify({'error': 'Reporting service temporarily unavailable (circuit open)'}), 503
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=service_url,
+            headers={key: value for key, value in request.headers if key != 'Host'},
+            json=request.get_json(silent=True),
+            params=request.args,
+        )
+        reset_circuit(REPORTING_SERVICE_URL)
+        return Response(resp.content, status=resp.status_code, content_type=resp.headers.get('Content-Type'))
+    except Exception as e:
+        record_failure(REPORTING_SERVICE_URL)
+        return jsonify({'error': 'Reporting service unreachable', 'details': str(e)}), 502
 
 @app.route('/auth/', methods=['GET'])
 def auth_root():

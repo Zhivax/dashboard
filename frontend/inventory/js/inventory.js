@@ -1,6 +1,7 @@
 class InventoryManager {
     constructor() {
-        this.baseURL = 'http://localhost:5001';
+        this.baseURL = 'http://localhost:8000/inventory';
+        this.authBaseURL = 'http://localhost:8000/auth';
         this.authToken = localStorage.getItem('token');
         this.currentEditId = null;
         this.items = [];
@@ -353,7 +354,7 @@ class InventoryManager {
 
     async logout() {
         try {
-            await fetch('http://localhost:5000/logout', {
+            await fetch(`${this.authBaseURL}/logout`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${this.authToken}`,
